@@ -361,6 +361,8 @@ class Crystal::CodeGenVisitor
     if target_def.no_inline?
       context.fun.add_attribute LLVM::Attribute::NoInline
       context.fun.linkage = LLVM::Linkage::External
+    elsif mangled_name.starts_with?("__") && mangled_name != "__crystal_sigfault_handler"
+      context.fun.linkage = LLVM::Linkage::Internal
     end
   end
 

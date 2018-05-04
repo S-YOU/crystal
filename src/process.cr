@@ -198,7 +198,9 @@ class Process
   # A pipe to this process's error. Raises if a pipe wasn't asked when creating the process.
   getter! error : IO::FileDescriptor
 
+  {% unless flag?(:fiber_none) %}
   @waitpid_future : Concurrent::Future(Process::Status)
+  {% end %}
 
   # Creates a process, executes it, but doesn't wait for it to complete.
   #

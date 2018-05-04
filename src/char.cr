@@ -579,7 +579,7 @@ struct Char
     else
       ord = ord()
       if 0 <= ord < 256
-        digit = String::CHAR_TO_DIGIT.to_unsafe[ord]
+        digit = LibExt.char_to_digit[ord]
         return if digit == -1 || digit >= base
         digit.to_i32
       end

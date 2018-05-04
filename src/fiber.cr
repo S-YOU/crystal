@@ -1,11 +1,13 @@
 require "c/sys/mman"
 
+{% unless flag?(:fiber_none) %}
 # :nodoc:
 @[NoInline]
 fun _fiber_get_stack_top : Void*
   dummy = uninitialized Int32
   pointerof(dummy).as(Void*)
 end
+{% end %}
 
 class Fiber
   STACK_SIZE = 8 * 1024 * 1024
@@ -115,6 +117,7 @@ class Fiber
   def run
     @proc.call
   rescue ex
+    {% unless flag?(:dpdk_patch) %}
     if name = @name
       STDERR.puts "Unhandled exception in spawn(name: #{name}):"
     else
@@ -122,6 +125,7 @@ class Fiber
     end
     ex.inspect_with_backtrace STDERR
     STDERR.flush
+    {% end %}
   ensure
     @@stack_pool << @stack
 
@@ -305,17 +309,19 @@ class Fiber
     GC.push_stack @stack_top, @stack_bottom
   end
 
-  @@root = new
-
   def self.root : self
     @@root
   end
 
+  {% unless flag?(:fiber_none) %}
+  @@root = new
   Thread.current.current_fiber = root
 
   def self.current : self
     Thread.current.current_fiber
   end
+
+  {% end %}
 
   # This will push all fibers stacks whenever the GC wants to collect some memory
   GC.before_collect do

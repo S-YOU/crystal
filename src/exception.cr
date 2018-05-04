@@ -50,12 +50,14 @@ class Exception
   end
 
   def inspect_with_backtrace(io : IO)
+    {% unless flag?(:release) %}
     io << message << " (" << self.class << ")\n"
     backtrace?.try &.each do |frame|
       io.print "  from "
       io.puts frame
     end
     io.flush
+    {% end %}
   end
 end
 

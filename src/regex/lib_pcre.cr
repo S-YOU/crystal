@@ -24,5 +24,9 @@ lib LibPCRE
   $pcre_free : Free
 end
 
+{% unless flag?(:dpdk_patch) %}
+
 LibPCRE.pcre_malloc = ->GC.malloc(LibC::SizeT)
 LibPCRE.pcre_free = ->GC.free(Void*)
+
+{% end %}

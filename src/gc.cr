@@ -1,3 +1,5 @@
+{% unless flag?(:dpdk_patch) %}
+
 # :nodoc:
 fun __crystal_malloc(size : UInt32) : Void*
   GC.malloc(LibC::SizeT.new(size))
@@ -12,6 +14,8 @@ end
 fun __crystal_realloc(pointer : Void*, size : UInt32) : Void*
   GC.realloc(pointer, LibC::SizeT.new(size))
 end
+
+{% end %}
 
 # :nodoc:
 fun __crystal_malloc64(size : UInt64) : Void*
@@ -47,6 +51,7 @@ fun __crystal_realloc64(ptr : Void*, size : UInt64) : Void*
 end
 
 module GC
+  {% unless flag?(:dpdk_patch) %}
   record Stats,
     # collections : LibC::ULong,
     # bytes_found : LibC::Long,
@@ -55,6 +60,7 @@ module GC
     unmapped_bytes : LibC::ULong,
     bytes_since_gc : LibC::ULong,
     total_bytes : LibC::ULong
+  {% end %}
 
   def self.malloc(size : Int)
     malloc(LibC::SizeT.new(size))

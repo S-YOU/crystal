@@ -131,6 +131,14 @@ end
 # Invokes `Crystal.main`.
 #
 # Can be redefined. See `Crystal.main` for examples.
+{% if flag?(:dpdk_patch) %}
+module Crystal
+  DPDK_PATCHED = true
+end
+{% else %}
+
 fun main(argc : Int32, argv : UInt8**) : Int32
   Crystal.main(argc, argv)
 end
+
+{% end %}

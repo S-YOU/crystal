@@ -16,8 +16,8 @@
 LLVM_CONFIG ?= ## llvm-config command path to use
 
 release ?=      ## Compile in release mode
-stats ?=        ## Enable statistics output
-progress ?=     ## Enable progress output
+stats ?= 1        ## Enable statistics output
+progress ?= 1     ## Enable progress output
 threads ?=      ## Maximum number of threads to use
 debug ?=        ## Add symbolic debug info
 verbose ?=      ## Run specs in verbose mode
@@ -27,12 +27,14 @@ static ?=       ## Enable static linking
 O := .build
 SOURCES := $(shell find src -name '*.cr')
 SPEC_SOURCES := $(shell find spec -name '*.cr')
-FLAGS := $(if $(release),--release )$(if $(stats),--stats )$(if $(progress),--progress )$(if $(threads),--threads $(threads) )$(if $(debug),-d )$(if $(static),--static )
+FLAGS := -Dgc_none $(if $(release),--release )$(if $(stats),--stats )$(if $(progress),--progress )$(if $(threads),--threads $(threads) )$(if $(debug),-d ,--no-debug )$(if $(static),--static )
 SPEC_FLAGS := $(if $(verbose),-v )$(if $(junit_output),--junit_output $(junit_output) )
 EXPORTS := $(if $(release),,CRYSTAL_CONFIG_PATH=`pwd`/src)
 SHELL = bash
 LLVM_CONFIG_FINDER := \
   [ -n "$(LLVM_CONFIG)" ] && command -v "$(LLVM_CONFIG)" || \
+  command -v llvm-config-5.0 || command -v llvm-config50 || \
+    (command -v llvm-config > /dev/null && (case "$(llvm-config --version)" in 5.0*) command -v llvm-config;; *) false;; esac)) || \
   command -v llvm-config-4.0 || command -v llvm-config40 || \
     (command -v llvm-config > /dev/null && (case "$(llvm-config --version)" in 4.0*) command -v llvm-config;; *) false;; esac)) || \
   command -v llvm-config-3.9 || command -v llvm-config39 || \
@@ -47,8 +49,8 @@ LIB_CRYSTAL_SOURCES = $(shell find src/ext -name '*.c')
 LIB_CRYSTAL_OBJS = $(subst .c,.o,$(LIB_CRYSTAL_SOURCES))
 LIB_CRYSTAL_TARGET = src/ext/libcrystal.a
 DEPS = $(LLVM_EXT_OBJ) $(LIB_CRYSTAL_TARGET)
-CFLAGS += -fPIC $(if $(debug),-g -O0)
-CXXFLAGS += $(if $(debug),-g -O0)
+CFLAGS += -fPIC $(if $(debug),-g -O0,-O3)
+CXXFLAGS += $(if $(debug),-g -O0,-O3)
 
 ifeq (${LLVM_CONFIG},)
   $(error Could not locate llvm-config, make sure it is installed and in your PATH, or set LLVM_CONFIG)
@@ -57,7 +59,7 @@ else
 endif
 
 .PHONY: all
-all: crystal ## Build all files (currently crystal only) [default]
+all: clean_crystal crystal ## Build all files (currently crystal only) [default]
 
 .PHONY: help
 help: ## Show this help

@@ -6,8 +6,10 @@ class IO::FileDescriptor < IO
   include IO::Buffered
   include IO::Syscall
 
+  {% unless flag?(:fiber_none) %}
   @read_event : Event::Event?
   @write_event : Event::Event?
+  {% end %}
 
   def initialize(@fd : Int32, blocking = false)
     @closed = false
@@ -226,10 +228,12 @@ class IO::FileDescriptor < IO
 
     @closed = true
 
+    {% unless flag?(:fiber_none) %}
     @read_event.try &.free
     @read_event = nil
     @write_event.try &.free
     @write_event = nil
+    {% end %}
 
     reschedule_waiting
 

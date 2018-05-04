@@ -1,8 +1,10 @@
 require "c/unistd"
 
+{% unless flag?(:dpdk_patch) %}
 STDIN  = IO::FileDescriptor.new(0, blocking: LibC.isatty(0) == 0)
 STDOUT = (IO::FileDescriptor.new(1, blocking: LibC.isatty(1) == 0)).tap { |f| f.flush_on_newline = true }
 STDERR = (IO::FileDescriptor.new(2, blocking: LibC.isatty(2) == 0)).tap { |f| f.flush_on_newline = true }
+{% end %}
 
 PROGRAM_NAME = String.new(ARGV_UNSAFE.value)
 ARGV         = Array.new(ARGC_UNSAFE - 1) { |i| String.new(ARGV_UNSAFE[1 + i]) }
@@ -190,6 +192,7 @@ class Process
   end
 end
 
+{% unless flag?(:fiber_none) %}
 Signal.setup_default_handlers
 
 at_exit { Event::SignalHandler.close }
@@ -201,3 +204,4 @@ spawn do
     Fiber.stack_pool_collect
   end
 end
+{% end %}

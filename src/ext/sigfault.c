@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "crystal_data.h"
+
 void __crystal_sigfault_handler(int sig, void *addr);
 
 void sigfault_handler(int sig, siginfo_t *info, void *data) {
@@ -18,6 +20,7 @@ void setup_sigfault_handler() {
   altstack.ss_flags = 0;
   sigaltstack(&altstack, NULL);
 
+  sigemptyset(&action.sa_mask);
   action.sa_flags = SA_ONSTACK | SA_SIGINFO;
   action.sa_sigaction = &sigfault_handler;
 

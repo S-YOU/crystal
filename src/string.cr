@@ -464,28 +464,6 @@ class String
   end
 
   # :nodoc:
-  CHAR_TO_DIGIT = begin
-    table = StaticArray(Int8, 256).new(-1_i8)
-    10_i8.times do |i|
-      table.to_unsafe[48 + i] = i
-    end
-    26_i8.times do |i|
-      table.to_unsafe[65 + i] = i + 10
-      table.to_unsafe[97 + i] = i + 10
-    end
-    table
-  end
-
-  # :nodoc:
-  CHAR_TO_DIGIT62 = begin
-    table = CHAR_TO_DIGIT.clone
-    26_i8.times do |i|
-      table.to_unsafe[65 + i] = i + 36
-    end
-    table
-  end
-
-  # :nodoc:
   record ToU64Info,
     value : UInt64,
     negative : Bool,
@@ -511,7 +489,7 @@ class String
   end
 
   private def to_u64_info(base, whitespace, underscore, prefix, strict)
-    raise ArgumentError.new("Invalid base #{base}") unless 2 <= base <= 36 || base == 62
+    raise "ArgumentError: Invalid base %s", base unless 2 <= base <= 36 || base == 62
 
     ptr = to_unsafe
 
@@ -560,7 +538,7 @@ class String
     last_is_underscore = true
     invalid = false
 
-    digits = (base == 62 ? CHAR_TO_DIGIT62 : CHAR_TO_DIGIT).to_unsafe
+    digits = base == 62 ? LibExt.char_to_digit62 : LibExt.char_to_digit
     while ptr.value != 0
       if ptr.value.unsafe_chr == '_' && underscore
         break if last_is_underscore

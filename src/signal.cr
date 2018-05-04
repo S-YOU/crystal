@@ -143,6 +143,8 @@ enum Signal
   end
 end
 
+{% unless flag?(:dpdk_patch) %}
+
 # :nodoc:
 fun __crystal_sigfault_handler(sig : LibC::Int, addr : Void*)
   Crystal.restore_blocking_state
@@ -154,3 +156,5 @@ fun __crystal_sigfault_handler(sig : LibC::Int, addr : Void*)
 end
 
 LibExt.setup_sigfault_handler
+
+{% end %}

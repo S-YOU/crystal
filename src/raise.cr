@@ -114,6 +114,8 @@ end
     __crystal_continue_unwind
   end
 {% else %}
+  {% unless flag?(:except_none) %}
+
   # :nodoc:
   fun __crystal_personality(version : Int32, actions : LibUnwind::Action, exception_class : UInt64, exception_object : LibUnwind::Exception*, context : Void*) : LibUnwind::ReasonCode
     start = LibUnwind.get_region_start(context)
@@ -160,6 +162,9 @@ end
     return LibUnwind::ReasonCode::CONTINUE_UNWIND
   end
 {% end %}
+{% end %}
+
+{% unless flag?(:dpdk_patch) %}
 
 # :nodoc:
 @[Raises]
@@ -189,12 +194,23 @@ def raise(exception : Exception) : NoReturn
   __crystal_raise(unwind_ex)
 end
 
+{% end %}
+
 # Raises an Exception with the *message*.
 def raise(message : String) : NoReturn
   raise Exception.new(message)
+end
+
+{% unless flag?(:dpdk_patch) %}
+
+def raise(format : String, *args) : NoReturn
+  LibC.printf(format, *args)
+  LibC.exit(1)
 end
 
 # :nodoc:
 fun __crystal_raise_string(message : UInt8*)
   raise String.new(message)
 end
+
+{% end %}
